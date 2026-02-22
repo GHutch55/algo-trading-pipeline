@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pycache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+
+# Data files
+*.csv
+*.tsv
+*.json
+*.pickle
+*.pkl
+*.h5
+*.hdf5
+
+# Logs
+*.log
+
+# Environment
+*.env
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# C/C++ build artifacts (if using C for backtesting)
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.out
+
+# Mac / Linux system files
+.DS_Store
+*.swp
