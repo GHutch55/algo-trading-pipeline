@@ -9,8 +9,12 @@ from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 
-def getData(
-    symbol: str, start_date: datetime, end_date: datetime, time_frame: str
+def get_data(
+    symbol: str,
+    start_date: datetime,
+    end_date: datetime,
+    time_frame: str,
+    save_csv: bool = True,
 ) -> pd.DataFrame:
     """
     Fetch historical market data for a symbol and save it as a CSV
@@ -24,7 +28,7 @@ def getData(
     Returns:
         pd.DataFrame: historical bars with columns like
             [symbol, timestamp, open, high, low, close, volume, ...].
-        .csv file: saved automatically in /data, name is "{symbol}_{timelength}.csv"
+        .csv file: saved automatically in /data
     """
     load_dotenv()
     API_KEY = os.environ["APCA_API_KEY_ID"]
@@ -55,11 +59,50 @@ def getData(
     bars = cast(Any, bars)
     df = bars.df
 
-    base_folder = Path("./data") / time_frame
-    base_folder.mkdir(parents=True, exist_ok=True)
-    filename = f"{symbol}_{time_frame}_{start_date:%Y-%m-%d}_{end_date:%Y-%m-%d}.csv"
-    full_path = str(base_folder / filename)
-    df.to_csv(full_path, index=True)
-    print(f"Saved CSV to: {full_path}")
+    df = clean_df(df)
+
+    if save_csv:
+        base_folder = Path("./data") / time_frame
+        base_folder.mkdir(parents=True, exist_ok=True)
+        filename = (
+            f"{symbol}_{time_frame}_{start_date:%Y-%m-%d}_{end_date:%Y-%m-%d}.csv"
+        )
+        full_path = str(base_folder / filename)
+        df.to_csv(full_path, index=True)
+        print(f"Saved CSV to: {full_path}")
+
+    return df
+
+
+def clean_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Minimal cleaning of a stock data DataFrame.
+
+    Steps:
+    1. Ensure 'timestamp' is a datetime index.
+    2. Sort by timestamp
+    3. Drop duplicate rows
+    4. Forward-fill missing numeric values
+
+    Parameters:
+        df (pd.DataFrame): raw stock data
+
+    Returns:
+        pd.DataFrame: cleaned DataFrame
+    """
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df = df.set_index("timestamp")
+
+    df = df.sort_index()
+
+    duplicates = df.index.duplicated(keep="first")
+    df = df.loc[~duplicates]
+
+    numeric_cols = df.select_dtypes(include="number").columns
+    df[numeric_cols] = df[numeric_cols].ffill(axis=0)
+
+    if isinstance(df.index, pd.MultiIndex):
+        df = df.droplevel("symbol")
 
     return df
