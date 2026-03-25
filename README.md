@@ -21,8 +21,8 @@ pip install -r requirements.txt
 ## Roadmap
 
 * [X] Data ingestion
-* [X] Strategy framework
-* [ ] Backtesting engine
+* [ ] Strategy framework
+* [X] Backtesting engine
 * [ ] Paper trading integration
 
 ---
